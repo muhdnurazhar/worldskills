@@ -52,40 +52,22 @@ Simulates the public internet environment to connect all corporate sites togethe
 ```bash
 ip route show protocol ospf
 sudo vtysh -c "show ip ospf neighbor"
+
+Neighbor ID     Pri State           Up Time         Dead Time Address         Interface                   
+210.187.97.126    1 Full/DR         1h19m48s          31.717s 103.17.78.6     ens37:103.17.78.1       
+```
 ```
 
 *Verify GRE over IPsec VPN tunnel interface state*
 ```bash
 ip link show tun1
-sudo strongswan status
-```
+swanctl --list-sas 
 
-*Verifying isc-dhcp-server and ddns*
-``` bash
-journalctl -u isc-dhcp-server -u namned --no-pager -n 20
-```
-
-# Test dynamic DNS resolution on CLIENT after DHCP lease binding
-nslookup client.wsmb2026.my 192.168.10.10
-
-*OSPF Routing Verification:*
-```bash
-root@HQ-EDGE:~# sudo vtysh -c "show ip ospf neighbor"
-
-Neighbor ID     Pri State           Up Time         Dead Time Address         Interface                   
-210.187.97.126    1 Full/DR         1h19m48s          31.717s 103.17.78.6     ens37:103.17.78.1       
-```
-
-*GRE Tunnel Verification*
-```bash
 root@HQ-EDGE:~# ip link show tun1
 7: tun1@NONE: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1476 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
     link/gre 103.17.78.1 peer 203.80.16.1
-```
 
-*Swanctl Security Associations (SA) Output:*
-```bash
-root@HQ-EDGE:~# swanctl -l
+root@HQ-EDGE:~# swanctl --list-sas
 conn: #1, ESTABLISHED, IKEv2, d29b8df9e76c2de9_i* b34e1173cf5c6461_r
   local  'C=MY, CN=HQ-EDGE.wsmb2026.my' @ 103.17.78.1[4500]
   remote 'C=MY, CN=DC-EDGE.itnsa.my' @ 203.80.16.1[4500]
@@ -99,8 +81,10 @@ conn: #1, ESTABLISHED, IKEv2, d29b8df9e76c2de9_i* b34e1173cf5c6461_r
     remote 192.168.20.0/24 192.168.200.2/32
 ```
 
-*DHCP-DDNS Handshake Log:*
-```bash
+*Verifying isc-dhcp-server and ddns*
+``` bash
+journalctl -u isc-dhcp-server -u namned --no-pager -n 20
+
 Jun 14 21:46:45 HQ-EDGE dhcpd[1675]: DHCPDISCOVER from 00:0c:29:bd:f8:8e via ens33
 Jun 14 21:46:46 HQ-EDGE dhcpd[1675]: DHCPOFFER on 192.168.10.158 to 00:0c:29:bd:f8:8e (CLIENT) via ens33
 Jun 14 21:46:46 HQ-EDGE dhcpd[1675]: DHCPREQUEST for 192.168.10.158 (192.168.10.254) from 00:0c:29:bd:f8:8e (CLIENT) via ens33
