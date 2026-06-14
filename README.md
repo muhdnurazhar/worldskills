@@ -116,21 +116,70 @@ Chaining: Confirms that Objective 2 is met by validating client-side PAM OpenLDA
 * **Chaining:** Confirms that Objective 2 is met by validating client-side PAM OpenLDAP login bounds, conditional Samba share restrictions, and TLS-hardened corporate messaging.
 * **Verification & Expected Logs:**
 
-```bash
-# Query the system to verify central directory group membership for domain users
-ldapsearch -x -H ldap://192.168.10.10 -b "cn=users,ou=groups,dc=wsmb2026,dc=my"
+```
+### Query LDAP Validation
+```text
+root@CLIENT:~# ldapsearch -x -H ldap://192.168.10.10 -b "cn=users,ou=groups,dc=wsmb2026,dc=my"
+# extended LDIF
+#
+# LDAPv3
+# base <cn=users,ou=groups,dc=wsmb2026,dc=my> with scope subtree
+# filter: (objectclass=*)
+# requesting: ALL
+#
 
+# users, groups, wsmb2026.my
+dn: cn=users,ou=groups,dc=wsmb2026,dc=my
+objectClass: posixGroup
+gidNumber: 10000
+cn: users
+memberUid: samad
+memberUid: krishnan
+memberUid: jimmy
+
+# search result
+search: 2
+result: 0 Success
+
+# numResponses: 2
+# numEntries: 
+```
+
+### Query 
 # Test remote SSH authorization using an LDAP directory user from CLIENT
-ssh jimmy@client.wsmb2026.my id
+```text
+root@CLIENT:~# ssh krishnan@client.wsmb2026.my id
+krishnan@client.wsmb2026.my's password:
+uid=10002(krishnan) gid=10000(groups) groups=10000(groups)
+```
 
 # Test corporate data governance boundaries on Samba data shares
-smbclient //192.168.10.10/internal -N -c 'ls'
-smbclient //192.168.10.10/internal -U smbuser%Skills39 -c 'ls'
+```text
+root@CLIENT:~# smbclient //192.168.10.10/internal -U smbuser%Skills39
+Try "help" to get a list of possible commands.
+smb: \> mkdir testing from client
+smb: \> ls
+  .                                   D        0  Sun Jun 14 23:15:06 2026
+  ..                                  D        0  Sun Jun 14 23:15:06 2026
+  testing                             D        0  Sun Jun 14 23:15:06 2026
+
+                19353424 blocks of size 1024. 16989856 blocks available
+```
 
 # Verify secure, encrypted SMTPS/IMAPS communication with Mail Server using custom CA
-openssl s_client -connect mail.itnsa.my:465 -brief
-
-
+```text
+root@CLIENT:~# openssl s_client -connect mail.itnsa.my:465 -brief
+Connecting to 192.168.20.11
+CONNECTION ESTABLISHED
+Protocol version: TLSv1.3
+Ciphersuite: TLS_AES_256_GCM_SHA384
+Peer certificate: C=MY, CN=*.itnsa.my
+Hash used: SHA256
+Signature type: rsa_pss_rsae_sha256
+Verification: OK
+Peer Temp Key: X25519, 253 bits
+220 DC-SRV1.itnsa.my ESMTP Postfix (Debian)
+```
 
 
 
