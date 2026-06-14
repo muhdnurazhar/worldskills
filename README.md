@@ -1,11 +1,11 @@
 # Simulate Secure Multi-Site Infrastructure
 
 ## Introduction & Project Overview
-This project simulates a real-world enterprise Linux-based (Debian 13) which focusses on security, centralization, load-balancing which is merge scenario where to geographically separated for coporate domains: (Headquarters) wsmb2026.my, (Server Farm) itnsa.my to establish reliable communication channels.
+> This project simulates a real-world enterprise Linux-based (Debian 13) which focusses on security, centralization, load-balancing which is merge scenario where to geographically separated for coporate domains: (Headquarters) wsmb2026.my, (Server Farm) itnsa.my to establish reliable communication channels.
 
 ## Project Objective
 
- To architect and deploy a production-ready, multi-site enterprise infrastructure that securely integrates two distinct corporate domains using simulated internet using Public ISP. 
+> To architect and deploy a production-ready, multi-site enterprise infrastructure that securely integrates two distinct corporate domains using simulated internet using Public ISP. 
 
 1. Utilizing critical thinking to solve core infrastructure challenges.
 
