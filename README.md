@@ -48,7 +48,7 @@ Simulates the public internet environment to connect all corporate sites togethe
 * **Chaining:** Confirms that Objective 1 is met by validating active OSPF routing, GRE over IPsec VPN tunnel stability, and active DHCP-DDNS updates.
 * **Verification & Expected Logs:**
 
-*Check OSPF neighbor status and routing table on HQ-EDGE*
+#### *Check OSPF neighbor status and routing table on HQ-EDGE* ####
 ```bash
 ip route show protocol ospf
 sudo vtysh -c "show ip ospf neighbor"
@@ -80,7 +80,7 @@ conn: #1, ESTABLISHED, IKEv2, d29b8df9e76c2de9_i* b34e1173cf5c6461_r
     remote 192.168.20.0/24 192.168.200.2/32
 ```
 
-*Verifying isc-dhcp-server and ddns*
+#### *Verifying isc-dhcp-server and ddns* ####
 ``` bash
 journalctl -u isc-dhcp-server -u namned --no-pager -n 20
 
@@ -92,7 +92,7 @@ Jun 14 21:46:46 HQ-EDGE dhcpd[1675]: Added new forward map from CLIENT.wsmb2026.
 Jun 14 21:46:46 HQ-EDGE dhcpd[1675]: Added reverse map from 158.10.168.192.in-addr.arpa. to CLIENT.wsmb2026.my
 ```
 
-*Validation of DDNS on Client:*
+#### *Validation of DDNS on Client:* ####
 ```bash
 root@CLIENT:~# nslookup client.wsmb2026.my
 Server:         192.168.10.10
