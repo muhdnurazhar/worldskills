@@ -41,3 +41,57 @@ Simulates the public internet environment to connect all corporate sites togethe
 * **GRE over IPsec VPN:** Builds secure, encrypted site-to-site tunnels authenticated by a custom Certificate Authority (CA).
 * **NFTables Firewall:** Blocks untrusted incoming public traffic by default while allowing internal hosts to use PAT.
 
+## System Verification & Results
+
+### Verification 1: Secure Network Infrastructure & Core Addressing
+* **What & Why:** Verifying that IP allocations automatically sync with internal name resolution, and site to site traffic is fully encrypted across the public transport layer.
+* **Chaining:** Confirms that Objective 1 is met by validating active OSPF routing, GRE over IPsec VPN tunnel stability, and active DHCP-DDNS updates.
+* **Verification & Expected Logs:**
+
+```bash
+# Check OSPF neighbor status and routing table on HQ-EDGE
+ip route show protocol ospf
+sudo vtysh -c "show ip ospf neighbor"
+
+# Verify GRE over IPsec VPN tunnel interface state
+ip link show tun1
+sudo strongswan status
+
+# Test dynamic DNS resolution on CLIENT after DHCP lease binding
+nslookup client.wsmb2026.my 192.168.10.10
+
+```text
+# OSPF Routing Verification:
+root@HQ-EDGE:~# sudo vtysh -c "show ip ospf neighbor"
+
+Neighbor ID     Pri State           Up Time         Dead Time Address         Interface                   
+210.187.97.126    1 Full/DR         1h19m48s          31.717s 103.17.78.6     ens37:103.17.78.1       
+
+# GRE Tunnel VErification
+root@HQ-EDGE:~# ip link show tun1
+7: tun1@NONE: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1476 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/gre 103.17.78.1 peer 203.80.16.1
+
+# Swanctl Security Associations (SA) Output:
+root@HQ-EDGE:~# swanctl -l
+conn: #1, ESTABLISHED, IKEv2, d29b8df9e76c2de9_i* b34e1173cf5c6461_r
+  local  'C=MY, CN=HQ-EDGE.wsmb2026.my' @ 103.17.78.1[4500]
+  remote 'C=MY, CN=DC-EDGE.itnsa.my' @ 203.80.16.1[4500]
+  AES_CBC-128/HMAC_SHA2_256_128/PRF_HMAC_SHA2_256/ECP_256
+  established 877s ago, rekeying in 12343s
+  child: #2, reqid 1, INSTALLED, TUNNEL, ESP:AES_GCM_16-128
+    installed 405s ago, rekeying in 2919s, expires in 3555s
+    in  c4e76654,  69764 bytes,  1041 packets,    22s ago
+    out cd9240a8,  69764 bytes,  1041 packets,    22s ago
+    local  192.168.10.0/24 192.168.200.1/32
+    remote 192.168.20.0/24 192.168.200.2/32
+
+#Testing Validation of DDNS on Client
+root@CLIENT:~# nslookup client.wsmb2026.my
+Server:         192.168.10.10
+Address:        192.168.10.10#53
+
+Name:   CLIENT.wsmb2026.my
+Address: 192.168.10.158
+
+
