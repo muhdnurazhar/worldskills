@@ -57,6 +57,9 @@ sudo vtysh -c "show ip ospf neighbor"
 ip link show tun1
 sudo strongswan status
 
+# Verifying isc-dhcp-server and ddns
+journalctl -u isc-dhcp-server -u namned --no-pager -n 20
+
 # Test dynamic DNS resolution on CLIENT after DHCP lease binding
 nslookup client.wsmb2026.my 192.168.10.10
 
@@ -67,7 +70,7 @@ root@HQ-EDGE:~# sudo vtysh -c "show ip ospf neighbor"
 Neighbor ID     Pri State           Up Time         Dead Time Address         Interface                   
 210.187.97.126    1 Full/DR         1h19m48s          31.717s 103.17.78.6     ens37:103.17.78.1       
 
-# GRE Tunnel VErification
+# GRE Tunnel Verification
 root@HQ-EDGE:~# ip link show tun1
 7: tun1@NONE: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1476 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
     link/gre 103.17.78.1 peer 203.80.16.1
@@ -86,12 +89,49 @@ conn: #1, ESTABLISHED, IKEv2, d29b8df9e76c2de9_i* b34e1173cf5c6461_r
     local  192.168.10.0/24 192.168.200.1/32
     remote 192.168.20.0/24 192.168.200.2/32
 
-#Testing Validation of DDNS on Client
+# DHCP-DDNS Handshake Log:
+Jun 14 21:46:45 HQ-EDGE dhcpd[1675]: DHCPDISCOVER from 00:0c:29:bd:f8:8e via ens33
+Jun 14 21:46:46 HQ-EDGE dhcpd[1675]: DHCPOFFER on 192.168.10.158 to 00:0c:29:bd:f8:8e (CLIENT) via ens33
+Jun 14 21:46:46 HQ-EDGE dhcpd[1675]: DHCPREQUEST for 192.168.10.158 (192.168.10.254) from 00:0c:29:bd:f8:8e (CLIENT) via ens33
+Jun 14 21:46:46 HQ-EDGE dhcpd[1675]: DHCPACK on 192.168.10.158 to 00:0c:29:bd:f8:8e (CLIENT) via ens33
+Jun 14 21:46:46 HQ-EDGE dhcpd[1675]: Added new forward map from CLIENT.wsmb2026.my to 192.168.10.158
+Jun 14 21:46:46 HQ-EDGE dhcpd[1675]: Added reverse map from 158.10.168.192.in-addr.arpa. to CLIENT.wsmb2026.my
+
+# Validation of DDNS on Client:
 root@CLIENT:~# nslookup client.wsmb2026.my
 Server:         192.168.10.10
 Address:        192.168.10.10#53
 
 Name:   CLIENT.wsmb2026.my
 Address: 192.168.10.158
+
+Verification 2: Centralized Identity & Trusted Data Governance
+What & Why: Verifying that network endpoints securely authorize domain users via a central directory and enforce safe, role-based file and email communications.
+
+Chaining: Confirms that Objective 2 is met by validating client-side PAM OpenLDAP login bounds, conditional Samba share restrictions, and TLS-hardened corporate messaging.
+```
+
+### Verification 2: Centralized Identity & Trusted Data Governance
+* **What & Why:** Verifying that network endpoints securely authorize domain users via a central directory and enforce safe, role-based file and email communications.
+* **Chaining:** Confirms that Objective 2 is met by validating client-side PAM OpenLDAP login bounds, conditional Samba share restrictions, and TLS-hardened corporate messaging.
+* **Verification & Expected Logs:**
+
+```bash
+# Query the system to verify central directory group membership for domain users
+ldapsearch -x -H ldap://192.168.10.10 -b "cn=users,ou=groups,dc=wsmb2026,dc=my"
+
+# Test remote SSH authorization using an LDAP directory user from CLIENT
+ssh jimmy@client.wsmb2026.my id
+
+# Test corporate data governance boundaries on Samba data shares
+smbclient //192.168.10.10/internal -N -c 'ls'
+smbclient //192.168.10.10/internal -U smbuser%Skills39 -c 'ls'
+
+# Verify secure, encrypted SMTPS/IMAPS communication with Mail Server using custom CA
+openssl s_client -connect mail.itnsa.my:465 -brief
+
+
+
+
 
 
