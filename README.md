@@ -171,5 +171,66 @@ Peer Temp Key: X25519, 253 bits
 ```
 
 
+### Verification 3: High-Availability Delivery & Infrastructure as Code (IaC)
+* **What & Why:** Verifying that web traffic is successfully load-balanced, internal endpoints switch roles seamlessly, and server configurations are deployed without errors via automation.
+* **Chaining:** Confirms that Objective 3 is met by validating HAProxy Round-Robin algorithm states and clean Ansible playbook execution metrics.*
+
+
+### *Verify HAProxy Round-Robin distribution across backend pools* ###
+```bash
+root@itnsa:~# for i in {1..4}; do curl -s https://www.itnsa.my | grep -i "Welcome to website of"; done
+<h1><center>Welcome to website of DC-SRV3 </center></h1>
+<h1><center>Welcome to website of DC-SRV2 </center></h1>
+<h1><center>Welcome to website of DC-SRV3 </center></h1>
+<h1><center>Welcome to website of DC-SRV2 </center></h1>
+```
+
+### *Verify automated task alignment and status check from Ansible host* ###
+```bash
+root@DC-SRV1:/opt/ansible# ansible-playbook configure-dns-srv3.yml configure-web-srv3.yml 
+
+PLAY [configure-dns-srv3.yml] **********************************************************************************************************
+
+TASK [Install bind] ********************************************************************************************************************
+[WARNING]: Host 'DC-SRV3' is using the discovered Python interpreter at '/usr/bin/python3.13', but future installation of another Python interpreter could cause a different interpreter to be discovered. See https://docs.ansible.com/ansible-core/2.19/reference_appendices/interpreter_discovery.html for more information.
+ok: [DC-SRV3]
+
+TASK [Push config secondary bind9 /etc/bind] *******************************************************************************************
+ok: [DC-SRV3]
+
+TASK [restart bind9] *******************************************************************************************************************
+changed: [DC-SRV3]
+
+PLAY RECAP *****************************************************************************************************************************
+DC-SRV3                    : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+
+PLAY [configure-web-srv3.yml] **********************************************************************************************************
+
+TASK [Install apache] ******************************************************************************************************************
+ok: [DC-SRV3]
+
+TASK [create folder] *******************************************************************************************************************
+ok: [DC-SRV3] => (item=www)
+ok: [DC-SRV3] => (item=intra)
+
+TASK [copy apache config file] *********************************************************************************************************
+ok: [DC-SRV3]
+
+TASK [ansible.builtin.shell] ***********************************************************************************************************
+changed: [DC-SRV3]
+
+TASK [ansible.builtin.shell] ***********************************************************************************************************
+changed: [DC-SRV3]
+
+TASK [ansible.builtin.shell] ***********************************************************************************************************
+changed: [DC-SRV3]
+
+TASK [ansible.builtin.shell] ***********************************************************************************************************
+changed: [DC-SRV3]
+
+PLAY RECAP *****************************************************************************************************************************
+DC-SRV3                    : ok=10   changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
 
 
