@@ -1,0 +1,18 @@
+	zone "itnsa.my" {
+		type secondary;
+		file "/var/cache/bind/db.itnsa";
+		masters { 192.168.20.12; };
+		allow-transfer { 192.168.10.10; };
+	};
+
+	zone "20.168.192.in-addr.arpa" {
+		type secondary;
+		file "/var/cache/bind/db.192";
+		masters { 192.168.20.12; };
+		allow-transfer { 192.168.10.10; };
+	};
+
+
+
+
+

@@ -1,0 +1,23 @@
+---
+# DC-SRV3 bind9
+- name: configure-dns-srv3.yml  
+  hosts: DC-SRV3
+  gather_facts: False
+  tasks: 
+# STEP 1  
+  - name: Install bind
+    ansible.builtin.apt:
+      name: bind9
+      state: present
+# STEP 2      
+  - name: Push config secondary bind9 /etc/bind
+    ansible.builtin.copy:
+      src: /opt/ansible/bind/dns
+      dest: /etc/bind/
+# STEP 3
+  - name: restart bind9
+    ansible.builtin.service:
+      name: bind9
+      state: restarted
+      enabled: true
+
